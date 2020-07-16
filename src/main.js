@@ -48,6 +48,38 @@ var is_key_down = (function () {
     window.addEventListener('keydown', function (e) { return state[e.key] = true; });
     return function (key) { return state.hasOwnProperty(key) && state[key] || false; };
 })();
+// Basic
+var Animator = /** @class */ (function () {
+    /**
+     * Assumed to be horizontal sprite sheet with constant width and height
+     * Manually need to input the width and height for now as the img is not guaranteed to be loaded in
+     */
+    function Animator(img, frameWidth, frameHeight, frameCount, frameDuration) {
+        this.currentFrame = 0;
+        this.timer = 0;
+        this.src = img;
+        this.frameWidth = frameWidth;
+        this.frameHeight = frameHeight;
+        this.frameCount = frameCount;
+        this.frameDuration = frameDuration;
+    }
+    Animator.prototype.update = function (dt) {
+        this.timer += dt;
+        if (this.timer > this.frameDuration) {
+            this.currentFrame++;
+            this.timer = 0;
+        }
+        if (this.currentFrame >= this.frameCount) {
+            this.currentFrame = 0;
+        }
+    };
+    Animator.prototype.draw = function (ctx, x, y) {
+        if (this.src) {
+            ctx.drawImage(this.src, this.currentFrame * this.frameWidth, 0, this.frameWidth, this.frameHeight, Math.round(x), Math.round(y), this.frameWidth, this.frameHeight);
+        }
+    };
+    return Animator;
+}());
 var WhisperEnd = /** @class */ (function () {
     function WhisperEnd() {
         var _this = this;
@@ -62,6 +94,7 @@ var WhisperEnd = /** @class */ (function () {
             aihtweEve: loadImageAsset("assets/aloneishowthewhisperends/eve.png"),
             aihtweForegroundShadow: loadImageAsset("assets/aloneishowthewhisperends/foregroundshadow.png"),
             aihtweRaven: loadImageAsset("assets/aloneishowthewhisperends/raven.png"),
+            aihtweAnimatedRaven: loadImageAsset("assets/aloneishowthewhisperends/animation-raven.png"),
             icon: loadImageAsset("assets/icon.png"),
             font: {
                 //chars go by ASCII values
@@ -89,6 +122,7 @@ var WhisperEnd = /** @class */ (function () {
                 "60": loadImageAsset("assets/font/60.png"),
                 "62": loadImageAsset("assets/font/62.png"),
                 "63": loadImageAsset("assets/font/63.png"),
+                "64": loadImageAsset("assets/font/64.png"),
                 "97": loadImageAsset("assets/font/97.png"),
                 "98": loadImageAsset("assets/font/98.png"),
                 "99": loadImageAsset("assets/font/99.png"),
@@ -117,6 +151,9 @@ var WhisperEnd = /** @class */ (function () {
                 "122": loadImageAsset("assets/font/122.png"),
             }
         };
+        this.animations = {
+            ravenAnimation: new Animator(this.assets.aihtweAnimatedRaven, 12, 10, 32, 0.125)
+        };
         this.loop = function () {
             _this.timeManager.update();
             _this.update();
@@ -143,6 +180,12 @@ var WhisperEnd = /** @class */ (function () {
         };
         this.resize();
         this.timeManager.init();
+        window.addEventListener("gamepadconnected", function (e) {
+            console.log("Gamepad connected at index %d: %s. %d buttons, %d axes.", e.gamepad.index, e.gamepad.id, e.gamepad.buttons.length, e.gamepad.axes.length);
+        });
+        window.addEventListener("gamepaddisconnected", function (e) {
+            console.log("Gamepad disconnected from index %d: %s", e.gamepad.index, e.gamepad.id);
+        });
         this.loop();
     }
     WhisperEnd.prototype.resize = function () {
@@ -177,6 +220,7 @@ var WhisperEnd = /** @class */ (function () {
         }
     };
     WhisperEnd.prototype.update = function () {
+        this.animations.ravenAnimation.update(this.timeManager.getDelta());
     };
     WhisperEnd.prototype.randomInt = function (min, max) {
         return Math.round(Math.random() * (max - min) + min);
@@ -235,11 +279,12 @@ var WhisperEnd = /** @class */ (function () {
         var delayer = 20;
         var distance = 1;
         //make room for menu
-        var xOffset = Math.sin(this.timeManager.getElapsed() / delayer) * distance + 30;
+        var xOffset = 30;
         // this.drawImg(this.assets.splashScreenBasic, xOffset, 0);
         this.drawImg(this.assets.aihtweBackground, xOffset, 0);
         this.drawImg(this.assets.aihtweEve, xOffset, 0);
-        this.drawImg(this.assets.aihtweRaven, xOffset, 0);
+        this.animations.ravenAnimation.draw(this.ctx, xOffset + 231, 131);
+        // this.drawImg(this.assets.aihtweRaven,xOffset,0);
         this.drawSnow();
         this.drawImg(this.assets.aihtweCeilingSplit, xOffset, 0);
         this.drawImg(this.assets.aihtweForegroundShadow, xOffset + Math.sin(this.timeManager.getElapsed() / 1) * 2 - 2, 0);
@@ -266,7 +311,9 @@ var WhisperEnd = /** @class */ (function () {
                 this.drawText(">", menuX - 5, menuY + menuYgap * i);
             }
         }
-        this.drawText("(DEMO)", titleX, 200);
+        var footerY = 224;
+        this.drawText("(DEMO)", titleX, footerY);
+        // this.drawText(`@sefemuza 2020`, titleX, footerY+5);
     };
     WhisperEnd.prototype.draw = function () {
         this.ctx.clearRect(0, 0, this.width, this.height);
