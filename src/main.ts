@@ -181,7 +181,7 @@ class WhisperEnd {
     private fontEffects = new OffscreenCanvas(3,4);
     private fontEffectsCtx = this.fontEffects.getContext('2d')!;
 
-    private drawText(text: string, x: number, y:number, color?: string): void {
+    private drawText(text: string, x: number, y:number): void {
         // Pixel only font, each character is 3x4 characters, case insensitive
         //Characters supported are abcdefghijklmnopqrstuvwxyz0123456789,."'-?!{}> 
         const txt = text.toLowerCase();
@@ -192,19 +192,8 @@ class WhisperEnd {
             if(!img) {
                 img = this.assets.font["invalid"];
             }
-            if(img && color && is_key_down('ArrowLeft')) {
-                this.fontEffectsCtx.clearRect(0,0,3,4);
-                this.fontEffectsCtx.save();
-                this.fontEffectsCtx.fillStyle = color;
-                this.fontEffectsCtx.fillRect(x + dx, y, 3, 4);
-                this.fontEffectsCtx.globalCompositeOperation = "destination-in";
-                this.fontEffectsCtx.drawImage(img, Math.round(x), Math.round(y));        
-                this.fontEffectsCtx.globalCompositeOperation = "source-over";
-                this.fontEffectsCtx.restore();
-                this.ctx.drawImage(this.fontEffects, x + dx, y);
-            } else {
-                this.drawImg(img, x + dx, y);   
-            }
+            this.drawImg(img, x + dx, y);   
+
             dx += 4;
         }
     }
@@ -212,21 +201,77 @@ class WhisperEnd {
     private update(): void {
     }
 
+    private snowParticles:any = [];
+
+    private randomInt(min:number, max:number):number {  
+        return Math.round(Math.random() * (max - min) + min); 
+    }   
+
+    private drawSnow() {
+        const snowColor = "#ffffff";
+        const snowColorDark = "#bacdde";
+        const snowFlakesCount = 100;
+        //seconds
+
+        for(let i = 0; i < snowFlakesCount; i++) {
+            let flake = this.snowParticles[i];
+            if(flake) {    
+                if(!flake.alive) {
+                    let x = this.randomInt(80, 370);
+                    let y = this.randomInt(-40, -5);
+                    let speed = this.randomInt(8, 15)
+                    flake.speed = speed;
+                    flake.x = x;
+                    flake.y = y;
+                    flake.timeAlive = this.randomInt(3, 15)
+                    flake.alive = true;
+                } else {
+                    flake.y += flake.speed * this.timeManager.getDelta();
+                    flake.x += Math.sin(flake.speed + flake.timeAlive) * this.timeManager.getDelta();
+
+                    if(flake.y > 100 || flake.timeAlive <= 1.5) {
+                        this.ctx.fillStyle = snowColorDark;
+                    } else {
+                        this.ctx.fillStyle = snowColor;
+                    }
+                    this.ctx.fillRect(Math.round(flake.x), Math.round(flake.y), 1, 1);
+
+                    flake.timeAlive -= this.timeManager.getDelta();
+                    if(flake.timeAlive <= 0 || flake.y > 190 || flake.x < 20) {
+                        flake.alive = false;
+                    }
+                }
+            } else {
+                this.snowParticles[i] = {
+                    x: 0,
+                    y: 0,
+                    dx: 0,
+                    dy: 0,
+                    speed: 0,
+                    timeAlive: 0,
+                    alive: false
+                };
+            }
+        }
+    }
+
     private drawAnimatedMainMenu() {
+        
         const bgColor = "#130e1a";
         this.ctx.fillStyle = bgColor;
         this.ctx.fillRect(0, 0, this.width, this.height);
 
         const delayer = 20;
-        const distance = 2;
+        const distance = 1;
         //make room for menu
         const xOffset = Math.sin(this.timeManager.getElapsed()/delayer) * distance + 30;
         // this.drawImg(this.assets.splashScreenBasic, xOffset, 0);
         this.drawImg(this.assets.aihtweBackground,xOffset,0);
         this.drawImg(this.assets.aihtweEve,xOffset,0);
         this.drawImg(this.assets.aihtweRaven,xOffset,0);
+        this.drawSnow();
         this.drawImg(this.assets.aihtweCeilingSplit,xOffset,0);
-        this.drawImg(this.assets.aihtweForegroundShadow,xOffset,0);
+        this.drawImg(this.assets.aihtweForegroundShadow,xOffset + Math.sin(this.timeManager.getElapsed()/1) * 2-2,0);
 
         //draw menu
         let menuOptions = [
@@ -249,7 +294,7 @@ class WhisperEnd {
 
         this.drawImg(this.assets.icon,  titleX, titleY-16);
 
-        this.drawText(`Whisper End`, titleX, titleY, "#ff0000");
+        this.drawText(`Whisper End`, titleX, titleY);
 
         for(let i = 0; i < menuOptions.length; i++) {
             this.drawText(menuOptions[i], menuX, menuY + menuYgap*i);

@@ -125,6 +125,7 @@ var WhisperEnd = /** @class */ (function () {
         };
         this.fontEffects = new OffscreenCanvas(3, 4);
         this.fontEffectsCtx = this.fontEffects.getContext('2d');
+        this.snowParticles = [];
         // notes
         console.log("Whisper End @Sefemuza 2020");
         console.log("Early demo build, note design choices. for sake of wanting to focus only on making a complete demo as soon as I can, I've set some limitations. Everything will be written in using Typescript to run in Electron desktop. Gamepad support only. Everything will run within resolution of 400x240 pixels. Only the canvas element will be used. Limited font will be used. Demo will be expanded upon later (i.e. touch screen support, mouse/keyboard, multiplatform) and probably rewritten in the Unity Engine but for now. I just want to have a working game to make it as easy for me to play around with and to keep motivation going. Similar to how barebone and straight to the point the pico8 is. I hope to focus as much on the actual game rather than technical details to keep the feeling of 'soul' alive and motivation high. Thank you!");
@@ -160,7 +161,7 @@ var WhisperEnd = /** @class */ (function () {
             this.ctx.drawImage(img, Math.round(x), Math.round(y));
         }
     };
-    WhisperEnd.prototype.drawText = function (text, x, y, color) {
+    WhisperEnd.prototype.drawText = function (text, x, y) {
         // Pixel only font, each character is 3x4 characters, case insensitive
         //Characters supported are abcdefghijklmnopqrstuvwxyz0123456789,."'-?!{}> 
         var txt = text.toLowerCase();
@@ -171,39 +172,77 @@ var WhisperEnd = /** @class */ (function () {
             if (!img) {
                 img = this.assets.font["invalid"];
             }
-            if (img && color && is_key_down('ArrowLeft')) {
-                this.fontEffectsCtx.clearRect(0, 0, 3, 4);
-                this.fontEffectsCtx.save();
-                this.fontEffectsCtx.fillStyle = color;
-                this.fontEffectsCtx.fillRect(x + dx, y, 3, 4);
-                this.fontEffectsCtx.globalCompositeOperation = "destination-in";
-                this.fontEffectsCtx.drawImage(img, Math.round(x), Math.round(y));
-                this.fontEffectsCtx.globalCompositeOperation = "source-over";
-                this.fontEffectsCtx.restore();
-                this.ctx.drawImage(this.fontEffects, x + dx, y);
-            }
-            else {
-                this.drawImg(img, x + dx, y);
-            }
+            this.drawImg(img, x + dx, y);
             dx += 4;
         }
     };
     WhisperEnd.prototype.update = function () {
+    };
+    WhisperEnd.prototype.randomInt = function (min, max) {
+        return Math.round(Math.random() * (max - min) + min);
+    };
+    WhisperEnd.prototype.drawSnow = function () {
+        var snowColor = "#ffffff";
+        var snowColorDark = "#bacdde";
+        var snowFlakesCount = 100;
+        //seconds
+        for (var i = 0; i < snowFlakesCount; i++) {
+            var flake = this.snowParticles[i];
+            if (flake) {
+                if (!flake.alive) {
+                    var x = this.randomInt(80, 370);
+                    var y = this.randomInt(-40, -5);
+                    var speed = this.randomInt(8, 15);
+                    flake.speed = speed;
+                    flake.x = x;
+                    flake.y = y;
+                    flake.timeAlive = this.randomInt(3, 15);
+                    flake.alive = true;
+                }
+                else {
+                    flake.y += flake.speed * this.timeManager.getDelta();
+                    flake.x += Math.sin(flake.speed + flake.timeAlive) * this.timeManager.getDelta();
+                    if (flake.y > 100 || flake.timeAlive <= 1.5) {
+                        this.ctx.fillStyle = snowColorDark;
+                    }
+                    else {
+                        this.ctx.fillStyle = snowColor;
+                    }
+                    this.ctx.fillRect(Math.round(flake.x), Math.round(flake.y), 1, 1);
+                    flake.timeAlive -= this.timeManager.getDelta();
+                    if (flake.timeAlive <= 0 || flake.y > 190 || flake.x < 20) {
+                        flake.alive = false;
+                    }
+                }
+            }
+            else {
+                this.snowParticles[i] = {
+                    x: 0,
+                    y: 0,
+                    dx: 0,
+                    dy: 0,
+                    speed: 0,
+                    timeAlive: 0,
+                    alive: false
+                };
+            }
+        }
     };
     WhisperEnd.prototype.drawAnimatedMainMenu = function () {
         var bgColor = "#130e1a";
         this.ctx.fillStyle = bgColor;
         this.ctx.fillRect(0, 0, this.width, this.height);
         var delayer = 20;
-        var distance = 2;
+        var distance = 1;
         //make room for menu
         var xOffset = Math.sin(this.timeManager.getElapsed() / delayer) * distance + 30;
         // this.drawImg(this.assets.splashScreenBasic, xOffset, 0);
         this.drawImg(this.assets.aihtweBackground, xOffset, 0);
         this.drawImg(this.assets.aihtweEve, xOffset, 0);
         this.drawImg(this.assets.aihtweRaven, xOffset, 0);
+        this.drawSnow();
         this.drawImg(this.assets.aihtweCeilingSplit, xOffset, 0);
-        this.drawImg(this.assets.aihtweForegroundShadow, xOffset, 0);
+        this.drawImg(this.assets.aihtweForegroundShadow, xOffset + Math.sin(this.timeManager.getElapsed() / 1) * 2 - 2, 0);
         //draw menu
         var menuOptions = [
             "Play",
@@ -220,7 +259,7 @@ var WhisperEnd = /** @class */ (function () {
         var menuYgap = 8;
         var selectorPosition = 0;
         this.drawImg(this.assets.icon, titleX, titleY - 16);
-        this.drawText("Whisper End", titleX, titleY, "#ff0000");
+        this.drawText("Whisper End", titleX, titleY);
         for (var i = 0; i < menuOptions.length; i++) {
             this.drawText(menuOptions[i], menuX, menuY + menuYgap * i);
             if (selectorPosition == i) {
