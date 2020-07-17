@@ -2,15 +2,6 @@
  * Whisper End
  * @sefemuza
  */
-function loadImageAsset(path: string): HTMLImageElement {
-    const img = new Image();
-    img.addEventListener('load', function() {
-
-    }, false);
-    img.src = path;
-    return img;
-}
-
 class TimeManager {
     private delta: number = 0.0;
     private elapsed: number = 0.0;
@@ -18,7 +9,11 @@ class TimeManager {
     private before: number = 0.0;
     public initalized: boolean = false;
 
-    public init(): void {
+    constructor() {
+        this.before = this.start = (performance || Date).now();
+    }
+
+    private init(): void {
         this.before = this.start = (performance || Date).now();
     }
 
@@ -29,6 +24,7 @@ class TimeManager {
         this.before = this.start;
     }
 
+    //returns time in seconds
     public getDelta(): number {
         return this.delta;
     }
@@ -47,6 +43,143 @@ class TimeManager {
     }
 }
 
+class LoreManager {
+    public readonly quotes: Array<Array<string>> = [
+        [
+            `"But ungodly men by their words and deeds summoned death;`,
+            `considering him a friend,`,
+            `they pined away,`,
+            `and they made a covenant with him,`,
+            `because they are fit to belong to his party."`,
+            `(Wisdom 1:16)`,],
+        [
+            `"And the sea gave up the dead which were in it;`,
+            `and death and hell delivered up the dead which were in them:`,
+            `and they were judged every man according to their works."`,
+            `(Revelation 20:13)`
+        ],
+        [
+            `"Whoever fights monsters should see to it that`,
+            `in the process he does not become a monster.`,
+            `And if you gaze long enough into an abyss,`,
+            `the abyss will gaze back into you."`,
+            `-Friedrich Nietzsche`
+        ],
+        [
+            `"Every tree that does not bear good fruit is cut down`,
+            `and thrown into the fire."`,
+            `(Matthew 7:1)`
+        ],
+        [
+            `"When the axe came into the Forest,`,
+            `the trees said `,
+            `'The handle is one of us'"`,
+            `-proverb`
+        ],
+        [
+            `"I am about to take my last voyage,`,
+            `a great leap in the dark"`,
+            `-Thomas Hobbes`
+        ],
+        [
+            `"The condition of man...`,
+            `is a condition of war of everyone against everyone."`,
+            `-Thomas Hobbes`
+        ],
+        [
+            `"And I looked, and behold, a pale horse!`,
+            `And its rider's name was Death, and Hades followed him."`,
+            `(Revelation 6:8)`
+        ],
+        [
+            `"And in those days shall men seek death and shall not find it;`,
+            `and shall desire to die, and death shall flee from them."`,
+            `(Revelation 9:6)`
+        ],
+        [
+            `"Do not act as if you were going to live ten thousand years.`,
+            `Death hangs over you.`,
+            `While you live, while it is in your power, be good."`,
+            `-Marcus Aurelius`
+        ],
+        [
+            `"Now I am become Death, the destroyer of worlds"`,
+            `-Robert Oppenheimer`
+        ],
+        [
+            `"Reality exists in the human mind, and nowhere else."`,
+            `-George Orwell`
+        ],
+        [
+            `"We are what we pretend to be,`,
+            `so we must be careful about what we pretend to be."`,
+            `-Kurt Vonnegut`
+        ],
+        [
+            `"We must laugh at man to avoid crying for him."`,
+            `-Napoleon Bonaparte`
+        ],
+        [
+            `whispers:`,
+            `"I wonder what they think when they see me"`
+        ],
+        [
+            `whispers:`,
+            `"and now I am forgotten..."`
+        ],
+        [
+            `whispers:`,
+            `"I have no one...`,
+            `but I have company in my dreams,`,
+            `I just want to dream...`,
+            `I just want to dream..."`,
+        ],
+        [
+            `whispers:`,
+            `"What do you want out of life?`,
+            `Are you sure?"`
+        ],
+        [
+            `whispers:`,
+            `"our memories hollow...`
+        ],
+        [
+            `whispers:`,
+            `"to reanimate someone...`,
+            `you must offer someone...`,
+            `and we choose you..."`
+        ],
+        [
+            `whispers:`,
+            `"the shadows call...`,
+            `alone..."`
+        ],
+        [
+            `whispers:`,
+            `"a key...`,
+            `a note...`,
+            `the altar...`,
+            `beyond the cave of despair..."`
+        ]
+        
+    ];
+
+    public getRandomQuote():Array<string> {
+        return this.quotes[Math.floor(Math.random() * this.quotes.length)];
+    }
+}
+
+function loadImageAsset(path: string): HTMLImageElement {
+    const img = new Image();
+    img.addEventListener('load', function() {
+
+    }, false);
+    img.src = path;
+    return img;
+}
+
+
+
 const is_key_down = (() => {
     const state:any = {};
 
@@ -55,6 +188,57 @@ const is_key_down = (() => {
 
     return (key:any) => state.hasOwnProperty(key) && state[key] || false;
 })();
+
+class Input {
+    public usingGamepad: boolean = false;
+    public activeGamepadIndex: number = -1;
+    public gamepad: Gamepad | null = null;
+
+    public dx: number = 0;
+    public dy: number = 0;
+
+    constructor() {
+
+        window.addEventListener("gamepadconnected", (event:any) => {
+            this.usingGamepad = true;
+            this.activeGamepadIndex = event.gamepad.index;
+            this.gamepad = navigator.getGamepads()[this.activeGamepadIndex];
+        });
+
+        window.addEventListener("gamepaddisconnected", (event:any) => {
+            this.usingGamepad = false;
+            this.activeGamepadIndex = -1;
+            this.gamepad = null;
+        });
+    }
+
+    public isGamepadConnected(): boolean {
+        return this.usingGamepad && navigator.getGamepads()[0] != null;
+    }
+
+    public getGamepad(gamepadIndex:number = 0): Gamepad {
+        return <Gamepad> navigator.getGamepads()[gamepadIndex];
+    }
+
+    public update():void {
+        let gamepad: Gamepad = this.getGamepad();
+        if(gamepad) {
+            let leftStickX = gamepad.axes[0];
+            let leftStickY = gamepad.axes[1];
+            const minDistance = 0.2;
+    
+            this.dx = (Math.abs(leftStickX) > minDistance) ? leftStickX : 0;
+            this.dy = (Math.abs(leftStickY) > minDistance) ? leftStickY : 0;
+    
+            if (gamepad) {
+                for (let i = 0; i < gamepad.buttons.length; i++) {
+                    // console.log(`Pressed ${gamepad.buttons[ButtonXBox.A].pressed}`);
+                }
+            }
+            console.log(`${this.dx}|${this.dy}`);
+        }
+    }
+}
 
 // Basic
 class Animator {
@@ -97,13 +281,23 @@ class Animator {
     }
 }
 
+const enum GameStates {
+    Boot,
+    TitleScreen,
+    Quote,
+    InGame,
+}
+
 class WhisperEnd {
     private readonly timeManager: TimeManager;
+    private readonly input: Input;
+    private readonly lore: LoreManager;
     private readonly width = 400;
     private readonly height = 240;
     private readonly canvas: HTMLCanvasElement;
     private readonly ctx: CanvasRenderingContext2D;
-   
+    private state: GameStates = GameStates.Quote;
+
     private assets: any = {
         splashScreenBasic : loadImageAsset("assets/splash-art-basic.png"),
         //aihtwe
@@ -139,6 +333,8 @@ class WhisperEnd {
             "55" : loadImageAsset("assets/font/55.png"),
             "56" : loadImageAsset("assets/font/56.png"),
             "57" : loadImageAsset("assets/font/57.png"),
+            "58" : loadImageAsset("assets/font/58.png"),
+            "59" : loadImageAsset("assets/font/59.png"),
             "60" : loadImageAsset("assets/font/60.png"),
 
             "62" : loadImageAsset("assets/font/62.png"),
@@ -190,14 +386,15 @@ class WhisperEnd {
 
     constructor() {
         // notes
-        console.log("Whisper End @Sefemuza 2020");
-        console.log("Early demo build, note design choices. for sake of wanting to focus only on making a complete demo as soon as I can, I've set some limitations. Everything will be written in using Typescript to run in Electron desktop. Gamepad support only. Everything will run within resolution of 400x240 pixels. Only the canvas element will be used. Limited font will be used. Demo will be expanded upon later (i.e. touch screen support, mouse/keyboard, multiplatform) and probably rewritten in the Unity Engine but for now. I just want to have a working game to make it as easy for me to play around with and to keep motivation going. Similar to how barebone and straight to the point the pico8 is. I hope to focus as much on the actual game rather than technical details to keep the feeling of 'soul' alive and motivation high. Thank you!");   
+        console.log("Whisper End @Sefemuza 2020");  
         // start
         this.timeManager = new TimeManager();
+        this.lore = new LoreManager();
+        this.input = new Input();
         // const supportedCharacters = `@abcdefghijklmnopqrstuvwxyz0123456789,."'-?!()>< @`.toLowerCase();
         // for(let i = 0; i < supportedCharacters.length; i++) {
         //     console.log(`${supportedCharacters.charAt(i)} : ${supportedCharacters.charCodeAt(i)}`);
-        // }
+        // }`
 
         this.canvas = document.getElementById("whisperend")! as HTMLCanvasElement;
         this.ctx = this.canvas.getContext("2d")!;
@@ -207,20 +404,6 @@ class WhisperEnd {
             this.resize();
         };
         this.resize();
-        this.timeManager.init();
-
-
-        window.addEventListener("gamepadconnected", function(e:any) {
-            console.log("Gamepad connected at index %d: %s. %d buttons, %d axes.",
-                e.gamepad.index, e.gamepad.id,
-                e.gamepad.buttons.length, e.gamepad.axes.length);
-            });
-            
-        window.addEventListener("gamepaddisconnected", function(e:any) {
-        console.log("Gamepad disconnected from index %d: %s",
-            e.gamepad.index, e.gamepad.id);
-        });
-
         this.loop();
     }
 
@@ -259,6 +442,7 @@ class WhisperEnd {
     }
 
     private update(): void {
+        this.input.update();
         this.animations.ravenAnimation.update(this.timeManager.getDelta());
 
     }
@@ -372,13 +556,37 @@ class WhisperEnd {
         // this.drawText(`@sefemuza 2020`, titleX, footerY+5);
     }
 
+    private quote: any;
+    private drawStateQuote(): void {
+        if(!this.quote) {
+            this.quote = this.lore.getRandomQuote();
+        }
+        let quote: Array<string> = this.quote;
+        let x = 78;
+        let y = 90;
+        let dy = 8;
+        for(let i = 0; i < quote.length; i++) {
+            this.drawText(quote[i], x, y + i * dy);
+        }
+    }
+
     private draw(): void {
         this.ctx.clearRect(0, 0, this.width, this.height);
-        this.drawAnimatedMainMenu();
+        switch(this.state) {
+
+            case GameStates.TitleScreen:
+                this.drawAnimatedMainMenu();
+                break;
+            case GameStates.Quote:
+                // can be used to load in between
+                this.drawStateQuote();
+                break;
+            default:
+
+        }
     }
 }
 
-// start of everything
 window.onload = () => {
     new WhisperEnd();
 };  

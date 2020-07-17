@@ -1,3 +1,5 @@
 ![Alone is how the whisper ends](https://github.com/sefemuza/whisperend/blob/master/gamedev/art/conceptart/scene-alone%20is%20how%20the%20whisper%20ends%20no%20HUD.png?raw=true)
 # whisperend
 Whisper End is a 2D pixel roguelite
+
+Early demo build, note design choices. for sake of wanting to focus only on making a complete demo as soon as I can, I've set some limitations. Everything will be written in using Typescript to run in Electron desktop. Gamepad support only. Everything will run within resolution of 400x240 pixels. Only the canvas element will be used. Limited font will be used. Demo will be expanded upon later (i.e. touch screen support, mouse/keyboard, multiplatform) and probably rewritten in the Unity Engine and even as a whole other game but for now. I just want to have a working game to make it as easy for me to play around with and to keep motivation going. Something to call home as I build lore, characters and keep busy. Similar to how barebone and straight to the point the pico8 is. I hope to focus as much on the actual game rather than technical details/over engineering to keep the feeling of 'soul' alive and motivation high. Thank you!

@@ -3,13 +3,6 @@
  * Whisper End
  * @sefemuza
  */
-function loadImageAsset(path) {
-    var img = new Image();
-    img.addEventListener('load', function () {
-    }, false);
-    img.src = path;
-    return img;
-}
 var TimeManager = /** @class */ (function () {
     function TimeManager() {
         this.delta = 0.0;
@@ -17,6 +10,7 @@ var TimeManager = /** @class */ (function () {
         this.start = 0.0;
         this.before = 0.0;
         this.initalized = false;
+        this.before = this.start = (performance || Date).now();
     }
     TimeManager.prototype.init = function () {
         this.before = this.start = (performance || Date).now();
@@ -27,6 +21,7 @@ var TimeManager = /** @class */ (function () {
         this.elapsed += this.delta;
         this.before = this.start;
     };
+    //returns time in seconds
     TimeManager.prototype.getDelta = function () {
         return this.delta;
     };
@@ -42,12 +37,190 @@ var TimeManager = /** @class */ (function () {
     };
     return TimeManager;
 }());
+var LoreManager = /** @class */ (function () {
+    function LoreManager() {
+        this.quotes = [
+            [
+                "\"But ungodly men by their words and deeds summoned death;",
+                "considering him a friend,",
+                "they pined away,",
+                "and they made a covenant with him,",
+                "because they are fit to belong to his party.\"",
+                "(Wisdom 1:16)",
+            ],
+            [
+                "\"And the sea gave up the dead which were in it;",
+                "and death and hell delivered up the dead which were in them:",
+                "and they were judged every man according to their works.\"",
+                "(Revelation 20:13)"
+            ],
+            [
+                "\"Whoever fights monsters should see to it that",
+                "in the process he does not become a monster.",
+                "And if you gaze long enough into an abyss,",
+                "the abyss will gaze back into you.\"",
+                "-Friedrich Nietzsche"
+            ],
+            [
+                "\"Every tree that does not bear good fruit is cut down",
+                "and thrown into the fire.\"",
+                "(Matthew 7:1)"
+            ],
+            [
+                "\"When the axe came into the Forest,",
+                "the trees said ",
+                "'The handle is one of us'\"",
+                "-proverb"
+            ],
+            [
+                "\"I am about to take my last voyage,",
+                "a great leap in the dark\"",
+                "-Thomas Hobbes"
+            ],
+            [
+                "\"The condition of man...",
+                "is a condition of war of everyone against everyone.\"",
+                "-Thomas Hobbes"
+            ],
+            [
+                "\"And I looked, and behold, a pale horse!",
+                "And its rider's name was Death, and Hades followed him.\"",
+                "(Revelation 6:8)"
+            ],
+            [
+                "\"And in those days shall men seek death and shall not find it;",
+                "and shall desire to die, and death shall flee from them.\"",
+                "(Revelation 9:6)"
+            ],
+            [
+                "\"Do not act as if you were going to live ten thousand years.",
+                "Death hangs over you.",
+                "While you live, while it is in your power, be good.\"",
+                "-Marcus Aurelius"
+            ],
+            [
+                "\"Now I am become Death, the destroyer of worlds\"",
+                "-Robert Oppenheimer"
+            ],
+            [
+                "\"Reality exists in the human mind, and nowhere else.\"",
+                "-George Orwell"
+            ],
+            [
+                "\"We are what we pretend to be,",
+                "so we must be careful about what we pretend to be.\"",
+                "-Kurt Vonnegut"
+            ],
+            [
+                "\"We must laugh at man to avoid crying for him.\"",
+                "-Napoleon Bonaparte"
+            ],
+            [
+                "whispers:",
+                "\"I wonder what they think when they see me\""
+            ],
+            [
+                "whispers:",
+                "\"and now I am forgotten...\""
+            ],
+            [
+                "whispers:",
+                "\"I have no one...",
+                "but I have company in my dreams,",
+                "I just want to dream...",
+                "I just want to dream...\"",
+            ],
+            [
+                "whispers:",
+                "\"What do you want out of life?",
+                "Are you sure?\""
+            ],
+            [
+                "whispers:",
+                "\"our memories hollow..."
+            ],
+            [
+                "whispers:",
+                "\"to reanimate someone...",
+                "you must offer someone...",
+                "and we choose you...\""
+            ],
+            [
+                "whispers:",
+                "\"the shadows call...",
+                "alone...\""
+            ],
+            [
+                "whispers:",
+                "\"a key...",
+                "a note...",
+                "the altar...",
+                "beyond the cave of despair...\""
+            ]
+        ];
+    }
+    LoreManager.prototype.getRandomQuote = function () {
+        return this.quotes[Math.floor(Math.random() * this.quotes.length)];
+    };
+    return LoreManager;
+}());
+function loadImageAsset(path) {
+    var img = new Image();
+    img.addEventListener('load', function () {
+    }, false);
+    img.src = path;
+    return img;
+}
 var is_key_down = (function () {
     var state = {};
     window.addEventListener('keyup', function (e) { return state[e.key] = false; });
     window.addEventListener('keydown', function (e) { return state[e.key] = true; });
     return function (key) { return state.hasOwnProperty(key) && state[key] || false; };
 })();
+var Input = /** @class */ (function () {
+    function Input() {
+        var _this = this;
+        this.usingGamepad = false;
+        this.activeGamepadIndex = -1;
+        this.gamepad = null;
+        this.dx = 0;
+        this.dy = 0;
+        window.addEventListener("gamepadconnected", function (event) {
+            _this.usingGamepad = true;
+            _this.activeGamepadIndex = event.gamepad.index;
+            _this.gamepad = navigator.getGamepads()[_this.activeGamepadIndex];
+        });
+        window.addEventListener("gamepaddisconnected", function (event) {
+            _this.usingGamepad = false;
+            _this.activeGamepadIndex = -1;
+            _this.gamepad = null;
+        });
+    }
+    Input.prototype.isGamepadConnected = function () {
+        return this.usingGamepad && navigator.getGamepads()[0] != null;
+    };
+    Input.prototype.getGamepad = function (gamepadIndex) {
+        if (gamepadIndex === void 0) { gamepadIndex = 0; }
+        return navigator.getGamepads()[gamepadIndex];
+    };
+    Input.prototype.update = function () {
+        var gamepad = this.getGamepad();
+        if (gamepad) {
+            var leftStickX = gamepad.axes[0];
+            var leftStickY = gamepad.axes[1];
+            var minDistance = 0.2;
+            this.dx = (Math.abs(leftStickX) > minDistance) ? leftStickX : 0;
+            this.dy = (Math.abs(leftStickY) > minDistance) ? leftStickY : 0;
+            if (gamepad) {
+                for (var i = 0; i < gamepad.buttons.length; i++) {
+                    // console.log(`Pressed ${gamepad.buttons[ButtonXBox.A].pressed}`);
+                }
+            }
+            console.log(this.dx + "|" + this.dy);
+        }
+    };
+    return Input;
+}());
 // Basic
 var Animator = /** @class */ (function () {
     /**
@@ -85,6 +258,7 @@ var WhisperEnd = /** @class */ (function () {
         var _this = this;
         this.width = 400;
         this.height = 240;
+        this.state = 2 /* Quote */;
         this.assets = {
             splashScreenBasic: loadImageAsset("assets/splash-art-basic.png"),
             //aihtwe
@@ -119,6 +293,8 @@ var WhisperEnd = /** @class */ (function () {
                 "55": loadImageAsset("assets/font/55.png"),
                 "56": loadImageAsset("assets/font/56.png"),
                 "57": loadImageAsset("assets/font/57.png"),
+                "58": loadImageAsset("assets/font/58.png"),
+                "59": loadImageAsset("assets/font/59.png"),
                 "60": loadImageAsset("assets/font/60.png"),
                 "62": loadImageAsset("assets/font/62.png"),
                 "63": loadImageAsset("assets/font/63.png"),
@@ -165,13 +341,14 @@ var WhisperEnd = /** @class */ (function () {
         this.snowParticles = [];
         // notes
         console.log("Whisper End @Sefemuza 2020");
-        console.log("Early demo build, note design choices. for sake of wanting to focus only on making a complete demo as soon as I can, I've set some limitations. Everything will be written in using Typescript to run in Electron desktop. Gamepad support only. Everything will run within resolution of 400x240 pixels. Only the canvas element will be used. Limited font will be used. Demo will be expanded upon later (i.e. touch screen support, mouse/keyboard, multiplatform) and probably rewritten in the Unity Engine but for now. I just want to have a working game to make it as easy for me to play around with and to keep motivation going. Similar to how barebone and straight to the point the pico8 is. I hope to focus as much on the actual game rather than technical details to keep the feeling of 'soul' alive and motivation high. Thank you!");
         // start
         this.timeManager = new TimeManager();
+        this.lore = new LoreManager();
+        this.input = new Input();
         // const supportedCharacters = `@abcdefghijklmnopqrstuvwxyz0123456789,."'-?!()>< @`.toLowerCase();
         // for(let i = 0; i < supportedCharacters.length; i++) {
         //     console.log(`${supportedCharacters.charAt(i)} : ${supportedCharacters.charCodeAt(i)}`);
-        // }
+        // }`
         this.canvas = document.getElementById("whisperend");
         this.ctx = this.canvas.getContext("2d");
         this.ctx.imageSmoothingEnabled = false;
@@ -179,13 +356,6 @@ var WhisperEnd = /** @class */ (function () {
             _this.resize();
         };
         this.resize();
-        this.timeManager.init();
-        window.addEventListener("gamepadconnected", function (e) {
-            console.log("Gamepad connected at index %d: %s. %d buttons, %d axes.", e.gamepad.index, e.gamepad.id, e.gamepad.buttons.length, e.gamepad.axes.length);
-        });
-        window.addEventListener("gamepaddisconnected", function (e) {
-            console.log("Gamepad disconnected from index %d: %s", e.gamepad.index, e.gamepad.id);
-        });
         this.loop();
     }
     WhisperEnd.prototype.resize = function () {
@@ -220,6 +390,7 @@ var WhisperEnd = /** @class */ (function () {
         }
     };
     WhisperEnd.prototype.update = function () {
+        this.input.update();
         this.animations.ravenAnimation.update(this.timeManager.getDelta());
     };
     WhisperEnd.prototype.randomInt = function (min, max) {
@@ -315,13 +486,33 @@ var WhisperEnd = /** @class */ (function () {
         this.drawText("(DEMO)", titleX, footerY);
         // this.drawText(`@sefemuza 2020`, titleX, footerY+5);
     };
+    WhisperEnd.prototype.drawStateQuote = function () {
+        if (!this.quote) {
+            this.quote = this.lore.getRandomQuote();
+        }
+        var quote = this.quote;
+        var x = 78;
+        var y = 90;
+        var dy = 8;
+        for (var i = 0; i < quote.length; i++) {
+            this.drawText(quote[i], x, y + i * dy);
+        }
+    };
     WhisperEnd.prototype.draw = function () {
         this.ctx.clearRect(0, 0, this.width, this.height);
-        this.drawAnimatedMainMenu();
+        switch (this.state) {
+            case 1 /* TitleScreen */:
+                this.drawAnimatedMainMenu();
+                break;
+            case 2 /* Quote */:
+                // can be used to load in between
+                this.drawStateQuote();
+                break;
+            default:
+        }
     };
     return WhisperEnd;
 }());
-// start of everything
 window.onload = function () {
     new WhisperEnd();
 };
