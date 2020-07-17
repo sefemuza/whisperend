@@ -16,7 +16,121 @@ var __assign = (this && this.__assign) || function () {
  */
 var LoreManager = /** @class */ (function () {
     function LoreManager() {
+        /**
+         * List of quotes to appear when hitting planning just before the game starts
+         * to set the mood?
+         * Sources: Old Testament, New Testament, Book of Enoch, Marcus Aurelius, Thomas Hobbe, Friedrich Nietzsche, proverbs
+         * George Orwell, Kurt Vonnegut, Napoleon Bonaparte
+         * "whispers" are random? idk gotta think lore for them
+         */
         this.quotes = [
+            [
+                "whispers:",
+                "\"mors certa vita incerta\""
+            ],
+            [
+                "\"If a man die, shall he live again?",
+                "All the days of my service I would wait,",
+                "till my release should come.\"",
+                "(Job 14:14)"
+            ],
+            [
+                "\"For if God spared not the angels that sinned,",
+                "but cast them down to hell,",
+                "and delivered them into chains of darkness,",
+                "to be reserved unto judgment;",
+                "(2 Peter 2:4)"
+            ],
+            [
+                "\"Above it stood the seraphims:",
+                "each one had six wings;",
+                "with twain he covered his face,",
+                "and with twain he covered his feet,",
+                "and with twain he did fly.\"",
+                "(Isaiah 6:2)"
+            ],
+            [
+                "\"Then I heard",
+                "the voices of those upon the four sides magnifying the Lord of glory.",
+                "The first voice blessed the Lord of spirits for ever and for ever.",
+                "The second voice I heard blessing the Elect One,",
+                "and the elect who suffer on account of the Lord of spirits.",
+                "The third voice I heard petitioning and praying for those who dwell upon earth,",
+                "and supplicate the name of the Lord of spirits.",
+                "The fourth voice I heard expelling the impious angels,",
+                "and prohibiting them from entering into the presence of the Lord of spirits,",
+                "to prefer accusations against the inhabitants of the earth",
+                "It would have been better for them, had they never been born.\"",
+                "(Enoch 40:3)"
+            ],
+            [
+                "\"Then Uriel,",
+                "one of the holy angels who were with me,",
+                "replied,",
+                "This valley is the accursed of the accursed for ever.",
+                "Here shall be collected all who utter with their mouths",
+                "unbecoming language against God,",
+                "and speak harsh things of His glory.",
+                "Here shall they be collected. Here shall be their territory.\"",
+                "(Enoch 24:2)"
+            ],
+            [
+                "\"Among these there was a tree of an unceasing smell;",
+                "nor of those which were in Eden",
+                "was there one of all the fragrant trees which smelt like this.",
+                "Its leaf, its flower, and its bark never withered,",
+                "and its fruit was beautiful...",
+                "The fruit of the tree shall be given to the elect\"",
+                "(Enoch 24:3)"
+            ],
+            [
+                "\"And understand with the heart.",
+                "As he has created and given to men",
+                "the power of comprehending the word of understanding,",
+                "so has he created and given to me",
+                "the power of reproving the Watchers, the offspring of heaven\"",
+                "(Enoch 14:2)"
+            ],
+            [
+                "\"Thus has the whole earth been filled with blood and with iniquity.",
+                "And now behold the souls of those who are dead, cry out.",
+                "And complain even to the gate of heaven.",
+                "Their groaning ascends;",
+                "nor can they escape from the unrighteousness which is committed on earth.",
+                "You know all things, before they exist.\"",
+                "(Enoch 9:9-12)"
+            ],
+            [
+                "\"These shall make war with the Lamb,",
+                "and the Lamb shall overcome them:",
+                "for he is Lord of lords, and King of kings:",
+                "and they that are with him are called, and chosen, and faithful.\"",
+                "(Revelation 17:14)"
+            ],
+            [
+                "\"And when he had opened the fifth seal,",
+                "I saw under the altar",
+                "the souls of them that were slain for the word of God,",
+                "and for the testimony which they held:",
+                "And they cried with a loud voice, saying,",
+                "How long, O Lord, holy and true,",
+                "dost thou not judge",
+                "and avenge our blood on them that dwell on the earth?\"",
+                "(Revelation 6:9-10)"
+            ],
+            [
+                "\"There I saw another vision;",
+                "I saw the habitations and",
+                "resting places of the saints.",
+                "There my eyes beheld their habitations with the angels,",
+                "and their resting places with the holy ones.",
+                "They were entreating, supplicating,",
+                "and praying for the sons of men;",
+                "while righteousness like water flowed before them,",
+                "and mercy like dew was scattered over the earth.",
+                "And thus shall it be with them for ever and for ever.\"",
+                "(Enoch 39:4)"
+            ],
             [
                 "\"But ungodly men by their words and deeds summoned death;",
                 "considering him a friend,",
@@ -93,6 +207,12 @@ var LoreManager = /** @class */ (function () {
                 "-Napoleon Bonaparte"
             ],
             [
+                "\"I saw in the visions of my head upon my bed,",
+                "and, behold, a watcher",
+                "and an holy one came down from heaven;\"",
+                "(Daniel 4:13)"
+            ],
+            [
                 "whispers:",
                 "\"I wonder what they think when they see me\""
             ],
@@ -145,9 +265,17 @@ var LoreManager = /** @class */ (function () {
                 "The tower...",
                 "Eight of cups...",
                 "The Devil...\""
+            ],
+            [
+                "whispers:",
+                "\"For ever...",
+                "and for ever...\""
             ]
         ];
     }
+    LoreManager.prototype.getSpecificQuote = function (index) {
+        return this.quotes[index];
+    };
     LoreManager.prototype.getRandomQuote = function () {
         return this.quotes[Math.floor(Math.random() * this.quotes.length)];
     };
@@ -471,6 +599,7 @@ var WhisperEnd = /** @class */ (function () {
             timeAlive: 0,
             alive: false
         });
+        this.quote = null;
         console.log("Whisper End @Sefemuza 2020");
         this.timeManager = new TimeManager();
         this.lore = new LoreManager();
@@ -550,8 +679,8 @@ var WhisperEnd = /** @class */ (function () {
             this.quote = this.lore.getRandomQuote();
         }
         var quote = this.quote;
-        var x = 78;
-        var y = 90;
+        var x = 70;
+        var y = 88;
         var dy = 8;
         for (var i = 0; i < quote.length; i++) {
             this.renderer.drawText(quote[i], x, y + i * dy);
