@@ -1,42 +1,19 @@
 "use strict";
+var __assign = (this && this.__assign) || function () {
+    __assign = Object.assign || function(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+                t[p] = s[p];
+        }
+        return t;
+    };
+    return __assign.apply(this, arguments);
+};
 /**
  * Whisper End
  * @sefemuza
  */
-var TimeManager = /** @class */ (function () {
-    function TimeManager() {
-        this.delta = 0.0;
-        this.elapsed = 0.0;
-        this.start = 0.0;
-        this.before = 0.0;
-        this.initalized = false;
-        this.before = this.start = (performance || Date).now();
-    }
-    TimeManager.prototype.init = function () {
-        this.before = this.start = (performance || Date).now();
-    };
-    TimeManager.prototype.update = function () {
-        this.start = (performance || Date).now(); //milliseconds
-        this.delta = (this.start - this.before) / 1000; //to seconds
-        this.elapsed += this.delta;
-        this.before = this.start;
-    };
-    //returns time in seconds
-    TimeManager.prototype.getDelta = function () {
-        return this.delta;
-    };
-    TimeManager.prototype.getDeltaMS = function () {
-        return this.delta * 1000;
-    };
-    TimeManager.prototype.getElapsed = function () {
-        return this.elapsed;
-    };
-    TimeManager.prototype.reset = function () {
-        this.init();
-        this.elapsed = 0;
-    };
-    return TimeManager;
-}());
 var LoreManager = /** @class */ (function () {
     function LoreManager() {
         this.quotes = [
@@ -143,7 +120,6 @@ var LoreManager = /** @class */ (function () {
                 "whispers:",
                 "\"to reanimate someone...",
                 "you must offer someone...",
-                "and we choose you...\""
             ],
             [
                 "whispers:",
@@ -156,6 +132,19 @@ var LoreManager = /** @class */ (function () {
                 "a note...",
                 "the altar...",
                 "beyond the cave of despair...\""
+            ],
+            [
+                "whispers:",
+                "\"as above...",
+                "as below...\""
+            ],
+            [
+                "whispers:",
+                "\"Five of pentacles...",
+                "Ten of swords...",
+                "The tower...",
+                "Eight of cups...",
+                "The Devil...\""
             ]
         ];
     }
@@ -164,19 +153,52 @@ var LoreManager = /** @class */ (function () {
     };
     return LoreManager;
 }());
-function loadImageAsset(path) {
-    var img = new Image();
-    img.addEventListener('load', function () {
-    }, false);
-    img.src = path;
-    return img;
-}
-var is_key_down = (function () {
-    var state = {};
-    window.addEventListener('keyup', function (e) { return state[e.key] = false; });
-    window.addEventListener('keydown', function (e) { return state[e.key] = true; });
-    return function (key) { return state.hasOwnProperty(key) && state[key] || false; };
-})();
+var TimeManager = /** @class */ (function () {
+    function TimeManager() {
+        this.delta = 0.0;
+        this.elapsed = 0.0;
+        this.start = 0.0;
+        this.before = 0.0;
+        this.initalized = false;
+        this.before = this.start = (performance || Date).now();
+    }
+    TimeManager.prototype.init = function () {
+        this.before = this.start = (performance || Date).now();
+    };
+    TimeManager.prototype.update = function () {
+        this.start = (performance || Date).now(); //milliseconds
+        this.delta = (this.start - this.before) / 1000; //to seconds
+        this.elapsed += this.delta;
+        this.before = this.start;
+    };
+    //returns time in seconds
+    TimeManager.prototype.getDelta = function () {
+        return this.delta;
+    };
+    TimeManager.prototype.getDeltaMS = function () {
+        return this.delta * 1000;
+    };
+    TimeManager.prototype.getElapsed = function () {
+        return this.elapsed;
+    };
+    TimeManager.prototype.reset = function () {
+        this.init();
+        this.elapsed = 0;
+    };
+    return TimeManager;
+}());
+var AssetManager = /** @class */ (function () {
+    function AssetManager() {
+    }
+    AssetManager.loadImageAsset = function (path) {
+        var img = new Image();
+        img.addEventListener('load', function () {
+        }, false);
+        img.src = path;
+        return img;
+    };
+    return AssetManager;
+}());
 var Input = /** @class */ (function () {
     function Input() {
         var _this = this;
@@ -219,6 +241,16 @@ var Input = /** @class */ (function () {
             console.log(this.dx + "|" + this.dy);
         }
     };
+    // quick and dirty key down
+    // key support is not planned
+    // only for quick debug
+    // game is gamepad only
+    Input.is_key_down = (function () {
+        var state = {};
+        window.addEventListener('keyup', function (e) { return state[e.key] = false; });
+        window.addEventListener('keydown', function (e) { return state[e.key] = true; });
+        return function (key) { return state.hasOwnProperty(key) && state[key] || false; };
+    })();
     return Input;
 }());
 // Basic
@@ -253,112 +285,76 @@ var Animator = /** @class */ (function () {
     };
     return Animator;
 }());
-var WhisperEnd = /** @class */ (function () {
-    function WhisperEnd() {
+var Renderer = /** @class */ (function () {
+    function Renderer(id, width, height) {
         var _this = this;
-        this.width = 400;
-        this.height = 240;
-        this.state = 2 /* Quote */;
-        this.assets = {
-            splashScreenBasic: loadImageAsset("assets/splash-art-basic.png"),
-            //aihtwe
-            //alone is how the whisper ends
-            aihtweBackground: loadImageAsset("assets/aloneishowthewhisperends/background.png"),
-            aihtweCeilingSplit: loadImageAsset("assets/aloneishowthewhisperends/ceilingsplit.png"),
-            aihtweEve: loadImageAsset("assets/aloneishowthewhisperends/eve.png"),
-            aihtweForegroundShadow: loadImageAsset("assets/aloneishowthewhisperends/foregroundshadow.png"),
-            aihtweRaven: loadImageAsset("assets/aloneishowthewhisperends/raven.png"),
-            aihtweAnimatedRaven: loadImageAsset("assets/aloneishowthewhisperends/animation-raven.png"),
-            icon: loadImageAsset("assets/icon.png"),
-            font: {
-                //chars go by ASCII values
-                "invalid": loadImageAsset("assets/font/invalid.png"),
-                "32": loadImageAsset("assets/font/32.png"),
-                "33": loadImageAsset("assets/font/33.png"),
-                "34": loadImageAsset("assets/font/34.png"),
-                "39": loadImageAsset("assets/font/39.png"),
-                //48-57
-                "40": loadImageAsset("assets/font/40.png"),
-                "41": loadImageAsset("assets/font/41.png"),
-                "44": loadImageAsset("assets/font/44.png"),
-                "45": loadImageAsset("assets/font/45.png"),
-                "46": loadImageAsset("assets/font/46.png"),
-                "48": loadImageAsset("assets/font/48.png"),
-                "49": loadImageAsset("assets/font/49.png"),
-                "50": loadImageAsset("assets/font/50.png"),
-                "51": loadImageAsset("assets/font/51.png"),
-                "52": loadImageAsset("assets/font/52.png"),
-                "53": loadImageAsset("assets/font/53.png"),
-                "54": loadImageAsset("assets/font/54.png"),
-                "55": loadImageAsset("assets/font/55.png"),
-                "56": loadImageAsset("assets/font/56.png"),
-                "57": loadImageAsset("assets/font/57.png"),
-                "58": loadImageAsset("assets/font/58.png"),
-                "59": loadImageAsset("assets/font/59.png"),
-                "60": loadImageAsset("assets/font/60.png"),
-                "62": loadImageAsset("assets/font/62.png"),
-                "63": loadImageAsset("assets/font/63.png"),
-                "64": loadImageAsset("assets/font/64.png"),
-                "97": loadImageAsset("assets/font/97.png"),
-                "98": loadImageAsset("assets/font/98.png"),
-                "99": loadImageAsset("assets/font/99.png"),
-                "100": loadImageAsset("assets/font/100.png"),
-                "101": loadImageAsset("assets/font/101.png"),
-                "102": loadImageAsset("assets/font/102.png"),
-                "103": loadImageAsset("assets/font/103.png"),
-                "104": loadImageAsset("assets/font/104.png"),
-                "105": loadImageAsset("assets/font/105.png"),
-                "106": loadImageAsset("assets/font/106.png"),
-                "107": loadImageAsset("assets/font/107.png"),
-                "108": loadImageAsset("assets/font/108.png"),
-                "109": loadImageAsset("assets/font/109.png"),
-                "110": loadImageAsset("assets/font/110.png"),
-                "111": loadImageAsset("assets/font/111.png"),
-                "112": loadImageAsset("assets/font/112.png"),
-                "113": loadImageAsset("assets/font/113.png"),
-                "114": loadImageAsset("assets/font/114.png"),
-                "115": loadImageAsset("assets/font/115.png"),
-                "116": loadImageAsset("assets/font/116.png"),
-                "117": loadImageAsset("assets/font/117.png"),
-                "118": loadImageAsset("assets/font/118.png"),
-                "119": loadImageAsset("assets/font/119.png"),
-                "120": loadImageAsset("assets/font/120.png"),
-                "121": loadImageAsset("assets/font/121.png"),
-                "122": loadImageAsset("assets/font/122.png"),
-            }
+        this.font = {
+            //chars go by ASCII values
+            "invalid": AssetManager.loadImageAsset("assets/font/invalid.png"),
+            "32": AssetManager.loadImageAsset("assets/font/32.png"),
+            "33": AssetManager.loadImageAsset("assets/font/33.png"),
+            "34": AssetManager.loadImageAsset("assets/font/34.png"),
+            "39": AssetManager.loadImageAsset("assets/font/39.png"),
+            //48-57
+            "40": AssetManager.loadImageAsset("assets/font/40.png"),
+            "41": AssetManager.loadImageAsset("assets/font/41.png"),
+            "44": AssetManager.loadImageAsset("assets/font/44.png"),
+            "45": AssetManager.loadImageAsset("assets/font/45.png"),
+            "46": AssetManager.loadImageAsset("assets/font/46.png"),
+            "48": AssetManager.loadImageAsset("assets/font/48.png"),
+            "49": AssetManager.loadImageAsset("assets/font/49.png"),
+            "50": AssetManager.loadImageAsset("assets/font/50.png"),
+            "51": AssetManager.loadImageAsset("assets/font/51.png"),
+            "52": AssetManager.loadImageAsset("assets/font/52.png"),
+            "53": AssetManager.loadImageAsset("assets/font/53.png"),
+            "54": AssetManager.loadImageAsset("assets/font/54.png"),
+            "55": AssetManager.loadImageAsset("assets/font/55.png"),
+            "56": AssetManager.loadImageAsset("assets/font/56.png"),
+            "57": AssetManager.loadImageAsset("assets/font/57.png"),
+            "58": AssetManager.loadImageAsset("assets/font/58.png"),
+            "59": AssetManager.loadImageAsset("assets/font/59.png"),
+            "60": AssetManager.loadImageAsset("assets/font/60.png"),
+            "62": AssetManager.loadImageAsset("assets/font/62.png"),
+            "63": AssetManager.loadImageAsset("assets/font/63.png"),
+            "64": AssetManager.loadImageAsset("assets/font/64.png"),
+            "97": AssetManager.loadImageAsset("assets/font/97.png"),
+            "98": AssetManager.loadImageAsset("assets/font/98.png"),
+            "99": AssetManager.loadImageAsset("assets/font/99.png"),
+            "100": AssetManager.loadImageAsset("assets/font/100.png"),
+            "101": AssetManager.loadImageAsset("assets/font/101.png"),
+            "102": AssetManager.loadImageAsset("assets/font/102.png"),
+            "103": AssetManager.loadImageAsset("assets/font/103.png"),
+            "104": AssetManager.loadImageAsset("assets/font/104.png"),
+            "105": AssetManager.loadImageAsset("assets/font/105.png"),
+            "106": AssetManager.loadImageAsset("assets/font/106.png"),
+            "107": AssetManager.loadImageAsset("assets/font/107.png"),
+            "108": AssetManager.loadImageAsset("assets/font/108.png"),
+            "109": AssetManager.loadImageAsset("assets/font/109.png"),
+            "110": AssetManager.loadImageAsset("assets/font/110.png"),
+            "111": AssetManager.loadImageAsset("assets/font/111.png"),
+            "112": AssetManager.loadImageAsset("assets/font/112.png"),
+            "113": AssetManager.loadImageAsset("assets/font/113.png"),
+            "114": AssetManager.loadImageAsset("assets/font/114.png"),
+            "115": AssetManager.loadImageAsset("assets/font/115.png"),
+            "116": AssetManager.loadImageAsset("assets/font/116.png"),
+            "117": AssetManager.loadImageAsset("assets/font/117.png"),
+            "118": AssetManager.loadImageAsset("assets/font/118.png"),
+            "119": AssetManager.loadImageAsset("assets/font/119.png"),
+            "120": AssetManager.loadImageAsset("assets/font/120.png"),
+            "121": AssetManager.loadImageAsset("assets/font/121.png"),
+            "122": AssetManager.loadImageAsset("assets/font/122.png"),
         };
-        this.animations = {
-            ravenAnimation: new Animator(this.assets.aihtweAnimatedRaven, 12, 10, 32, 0.125)
-        };
-        this.loop = function () {
-            _this.timeManager.update();
-            _this.update();
-            _this.draw();
-            requestAnimationFrame(_this.loop);
-        };
-        this.fontEffects = new OffscreenCanvas(3, 4);
-        this.fontEffectsCtx = this.fontEffects.getContext('2d');
-        this.snowParticles = [];
-        // notes
-        console.log("Whisper End @Sefemuza 2020");
-        // start
-        this.timeManager = new TimeManager();
-        this.lore = new LoreManager();
-        this.input = new Input();
-        // const supportedCharacters = `@abcdefghijklmnopqrstuvwxyz0123456789,."'-?!()>< @`.toLowerCase();
-        // for(let i = 0; i < supportedCharacters.length; i++) {
-        //     console.log(`${supportedCharacters.charAt(i)} : ${supportedCharacters.charCodeAt(i)}`);
-        // }`
-        this.canvas = document.getElementById("whisperend");
+        this.width = width;
+        this.height = height;
+        this.canvas = document.getElementById(id);
         this.ctx = this.canvas.getContext("2d");
         this.ctx.imageSmoothingEnabled = false;
         window.onresize = function () {
             _this.resize();
         };
         this.resize();
-        this.loop();
     }
-    WhisperEnd.prototype.resize = function () {
+    Renderer.prototype.resize = function () {
         var sx = (window.innerWidth / this.width) | 0;
         var sy = (window.innerHeight / this.height) | 0;
         var scale = sx <= sy ? sx : sy;
@@ -368,97 +364,161 @@ var WhisperEnd = /** @class */ (function () {
         this.canvas.style.width = this.width * scale + "px";
         this.canvas.style.height = this.height * scale + "px";
     };
-    WhisperEnd.prototype.drawImg = function (img, x, y) {
-        // everything is pixel perfect
+    Renderer.prototype.clear = function () {
+        this.ctx.clearRect(0, 0, this.width, this.height);
+    };
+    /**
+     * Pixel perfect drawImage
+     * @param img may be null, ignore draw call if it is
+     * @param x rounded to nearest int
+     * @param y rounded to nearest int
+     */
+    Renderer.prototype.drawImg = function (img, x, y) {
         if (img) {
             this.ctx.drawImage(img, Math.round(x), Math.round(y));
         }
     };
-    WhisperEnd.prototype.drawText = function (text, x, y) {
-        // Pixel only font, each character is 3x4 characters, case insensitive
-        //Characters supported are abcdefghijklmnopqrstuvwxyz0123456789,."'-?!{}> 
+    /**
+     * Pixel perfect draw text
+     * Pixel only font, each character is 3x4 characters, case insensitive
+     * Characters supported are abcdefghijklmnopqrstuvwxyz0123456789,."'-?!()><;@
+     * Invalid characters will be drawn as a high contrast square of the same char size to stand out to fix
+     * @param text
+     * @param x
+     * @param y
+     */
+    Renderer.prototype.drawText = function (text, x, y) {
         var txt = text.toLowerCase();
-        var dx = 0; //horizontal displacement
-        for (var i = 0; i < txt.length; i++) {
-            var asciiValue = txt.charCodeAt(i);
-            var img = this.assets.font[asciiValue];
+        x = Math.round(x);
+        y = Math.round(y);
+        var spaceBetweenChars = 4; // size of char plus one
+        for (var i = 0, dx = 0; i < txt.length; i++) {
+            var img = this.font[txt.charCodeAt(i)];
             if (!img) {
-                img = this.assets.font["invalid"];
+                img = this.font["invalid"];
             }
             this.drawImg(img, x + dx, y);
-            dx += 4;
+            dx += spaceBetweenChars;
         }
     };
-    WhisperEnd.prototype.update = function () {
-        this.input.update();
-        this.animations.ravenAnimation.update(this.timeManager.getDelta());
+    Renderer.prototype.fillBackground = function (bgColor) {
+        this.ctx.fillStyle = bgColor;
+        this.ctx.fillRect(0, 0, this.width, this.height);
     };
+    Renderer.prototype.drawPixel = function (color, x, y) {
+        this.ctx.fillStyle = color;
+        this.ctx.fillRect(Math.round(x), Math.round(y), 1, 1);
+    };
+    Renderer.prototype.drawFrame = function (img, frameIndex, frameWidth, frameHeight, x, y) {
+        if (img) {
+            this.ctx.drawImage(img, frameIndex * frameWidth, 0, frameWidth, frameHeight, Math.round(x), Math.round(y), frameWidth, frameHeight);
+        }
+    };
+    return Renderer;
+}());
+var Particles = /** @class */ (function () {
+    function Particles(count, particleVariables) {
+        this.particles = [];
+        this.count = count;
+        for (var i = 0; i < this.count; i++) {
+            this.particles[i] = __assign({}, particleVariables);
+        }
+    }
+    return Particles;
+}());
+var WhisperEnd = /** @class */ (function () {
+    function WhisperEnd() {
+        var _this = this;
+        this.state = 1 /* TitleScreen */;
+        this.assets = {
+            splashScreenBasic: AssetManager.loadImageAsset("assets/splash-art-basic.png"),
+            //aihtwe
+            //alone is how the whisper ends
+            aihtweBackground: AssetManager.loadImageAsset("assets/aloneishowthewhisperends/background.png"),
+            aihtweCeilingSplit: AssetManager.loadImageAsset("assets/aloneishowthewhisperends/ceilingsplit.png"),
+            aihtweEve: AssetManager.loadImageAsset("assets/aloneishowthewhisperends/eve.png"),
+            aihtweForegroundShadow: AssetManager.loadImageAsset("assets/aloneishowthewhisperends/foregroundshadow.png"),
+            aihtweRaven: AssetManager.loadImageAsset("assets/aloneishowthewhisperends/raven.png"),
+            aihtweAnimatedRaven: AssetManager.loadImageAsset("assets/aloneishowthewhisperends/animation-raven.png"),
+            icon: AssetManager.loadImageAsset("assets/icon.png"),
+        };
+        this.animations = {
+            ravenAnimation: new Animator(this.assets.aihtweAnimatedRaven, 12, 10, 32, 0.125)
+        };
+        this.loop = function () {
+            _this.timeManager.update();
+            _this.input.update();
+            _this.renderer.clear();
+            switch (_this.state) {
+                case 1 /* TitleScreen */:
+                    _this.animations.ravenAnimation.update(_this.timeManager.getDelta());
+                    _this.drawAnimatedMainMenu();
+                    break;
+                case 2 /* Quote */:
+                    // can be used to load in between
+                    _this.drawStateQuote();
+                    break;
+                default:
+            }
+            requestAnimationFrame(_this.loop);
+        };
+        this.snow = new Particles(100, {
+            x: 0,
+            y: 0,
+            dx: 0,
+            dy: 0,
+            speed: 0,
+            timeAlive: 0,
+            alive: false
+        });
+        console.log("Whisper End @Sefemuza 2020");
+        this.timeManager = new TimeManager();
+        this.lore = new LoreManager();
+        this.input = new Input();
+        this.renderer = new Renderer("whisperend", 400, 240);
+        this.loop();
+    }
     WhisperEnd.prototype.randomInt = function (min, max) {
         return Math.round(Math.random() * (max - min) + min);
     };
     WhisperEnd.prototype.drawSnow = function () {
         var snowColor = "#ffffff";
         var snowColorDark = "#bacdde";
-        var snowFlakesCount = 100;
-        //seconds
-        for (var i = 0; i < snowFlakesCount; i++) {
-            var flake = this.snowParticles[i];
-            if (flake) {
-                if (!flake.alive) {
-                    var x = this.randomInt(80, 370);
-                    var y = this.randomInt(-40, -5);
-                    var speed = this.randomInt(8, 15);
-                    flake.speed = speed;
-                    flake.x = x;
-                    flake.y = y;
-                    flake.timeAlive = this.randomInt(3, 15);
-                    flake.alive = true;
-                }
-                else {
-                    flake.y += flake.speed * this.timeManager.getDelta();
-                    flake.x += Math.sin(flake.speed + flake.timeAlive) * this.timeManager.getDelta();
-                    if (flake.y > 100 || flake.timeAlive <= 1.5) {
-                        this.ctx.fillStyle = snowColorDark;
-                    }
-                    else {
-                        this.ctx.fillStyle = snowColor;
-                    }
-                    this.ctx.fillRect(Math.round(flake.x), Math.round(flake.y), 1, 1);
-                    flake.timeAlive -= this.timeManager.getDelta();
-                    if (flake.timeAlive <= 0 || flake.y > 190 || flake.x < 20) {
-                        flake.alive = false;
-                    }
-                }
+        for (var i = 0; i < this.snow.count; i++) {
+            var p = this.snow.particles[i];
+            if (!p.alive) {
+                var x = this.randomInt(80, 370);
+                var y = this.randomInt(-40, -5);
+                var speed = this.randomInt(8, 15);
+                p.speed = speed;
+                p.x = x;
+                p.y = y;
+                p.timeAlive = this.randomInt(3, 15);
+                p.alive = true;
             }
             else {
-                this.snowParticles[i] = {
-                    x: 0,
-                    y: 0,
-                    dx: 0,
-                    dy: 0,
-                    speed: 0,
-                    timeAlive: 0,
-                    alive: false
-                };
+                p.y += p.speed * this.timeManager.getDelta();
+                p.x += Math.sin(p.speed + p.timeAlive) * this.timeManager.getDelta();
+                this.renderer.drawPixel((p.y > 100 || p.timeAlive <= 1.5) ? snowColorDark : snowColor, p.x, p.y);
+                p.timeAlive -= this.timeManager.getDelta();
+                if (p.timeAlive <= 0 || p.y > 190 || p.x < 20) {
+                    p.alive = false;
+                }
             }
         }
     };
     WhisperEnd.prototype.drawAnimatedMainMenu = function () {
-        var bgColor = "#130e1a";
-        this.ctx.fillStyle = bgColor;
-        this.ctx.fillRect(0, 0, this.width, this.height);
+        this.renderer.fillBackground("#130e1a");
         var delayer = 20;
         var distance = 1;
-        //make room for menu
-        var xOffset = 30;
-        // this.drawImg(this.assets.splashScreenBasic, xOffset, 0);
-        this.drawImg(this.assets.aihtweBackground, xOffset, 0);
-        this.drawImg(this.assets.aihtweEve, xOffset, 0);
-        this.animations.ravenAnimation.draw(this.ctx, xOffset + 231, 131);
-        // this.drawImg(this.assets.aihtweRaven,xOffset,0);
+        var menuOffset = 30;
+        this.renderer.drawImg(this.assets.aihtweBackground, menuOffset, 0);
+        this.renderer.drawImg(this.assets.aihtweEve, menuOffset, 0);
+        var a = this.animations.ravenAnimation;
+        this.renderer.drawFrame(a.src, a.currentFrame, a.frameWidth, a.frameHeight, menuOffset + 231, 131);
         this.drawSnow();
-        this.drawImg(this.assets.aihtweCeilingSplit, xOffset, 0);
-        this.drawImg(this.assets.aihtweForegroundShadow, xOffset + Math.sin(this.timeManager.getElapsed() / 1) * 2 - 2, 0);
+        this.renderer.drawImg(this.assets.aihtweCeilingSplit, menuOffset, 0);
+        this.renderer.drawImg(this.assets.aihtweForegroundShadow, menuOffset + Math.sin(this.timeManager.getElapsed() / 1) * 2 - 2, 0);
         //draw menu
         var menuOptions = [
             "Play",
@@ -474,17 +534,16 @@ var WhisperEnd = /** @class */ (function () {
         var menuY = titleY + menuYOffset;
         var menuYgap = 8;
         var selectorPosition = 0;
-        this.drawImg(this.assets.icon, titleX, titleY - 16);
-        this.drawText("Whisper End", titleX, titleY);
+        this.renderer.drawImg(this.assets.icon, titleX, titleY - 16);
+        this.renderer.drawText("Whisper End", titleX, titleY);
         for (var i = 0; i < menuOptions.length; i++) {
-            this.drawText(menuOptions[i], menuX, menuY + menuYgap * i);
+            this.renderer.drawText(menuOptions[i], menuX, menuY + menuYgap * i);
             if (selectorPosition == i) {
-                this.drawText(">", menuX - 5, menuY + menuYgap * i);
+                this.renderer.drawText(">", menuX - 5, menuY + menuYgap * i);
             }
         }
         var footerY = 224;
-        this.drawText("(DEMO)", titleX, footerY);
-        // this.drawText(`@sefemuza 2020`, titleX, footerY+5);
+        this.renderer.drawText("(DEMO)", titleX, footerY);
     };
     WhisperEnd.prototype.drawStateQuote = function () {
         if (!this.quote) {
@@ -495,20 +554,7 @@ var WhisperEnd = /** @class */ (function () {
         var y = 90;
         var dy = 8;
         for (var i = 0; i < quote.length; i++) {
-            this.drawText(quote[i], x, y + i * dy);
-        }
-    };
-    WhisperEnd.prototype.draw = function () {
-        this.ctx.clearRect(0, 0, this.width, this.height);
-        switch (this.state) {
-            case 1 /* TitleScreen */:
-                this.drawAnimatedMainMenu();
-                break;
-            case 2 /* Quote */:
-                // can be used to load in between
-                this.drawStateQuote();
-                break;
-            default:
+            this.renderer.drawText(quote[i], x, y + i * dy);
         }
     };
     return WhisperEnd;
