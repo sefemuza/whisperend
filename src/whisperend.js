@@ -10,12 +10,64 @@ var __assign = (this && this.__assign) || function () {
     };
     return __assign.apply(this, arguments);
 };
-/**
- * Whisper End
- * @sefemuza
- */
+var Input = /** @class */ (function () {
+    function Input() {
+        var _this = this;
+        this.usingGamepad = false;
+        this.activeGamepadIndex = -1;
+        this.gamepad = null;
+        this.dx = 0;
+        this.dy = 0;
+        window.addEventListener("gamepadconnected", function (event) {
+            _this.usingGamepad = true;
+            _this.activeGamepadIndex = event.gamepad.index;
+            _this.gamepad = navigator.getGamepads()[_this.activeGamepadIndex];
+        });
+        window.addEventListener("gamepaddisconnected", function (event) {
+            _this.usingGamepad = false;
+            _this.activeGamepadIndex = -1;
+            _this.gamepad = null;
+        });
+        console.log("Input ready");
+    }
+    Input.prototype.isGamepadConnected = function () {
+        return this.usingGamepad && navigator.getGamepads()[0] != null;
+    };
+    Input.prototype.getGamepad = function (gamepadIndex) {
+        if (gamepadIndex === void 0) { gamepadIndex = 0; }
+        return navigator.getGamepads()[gamepadIndex];
+    };
+    Input.prototype.update = function () {
+        var gamepad = this.getGamepad();
+        if (gamepad) {
+            var leftStickX = gamepad.axes[0];
+            var leftStickY = gamepad.axes[1];
+            var minDistance = 0.2;
+            this.dx = (Math.abs(leftStickX) > minDistance) ? leftStickX : 0;
+            this.dy = (Math.abs(leftStickY) > minDistance) ? leftStickY : 0;
+            if (gamepad) {
+                for (var i = 0; i < gamepad.buttons.length; i++) {
+                    // console.log(`Pressed ${gamepad.buttons[ButtonXBox.A].pressed}`);
+                }
+            }
+            console.log(this.dx + "|" + this.dy);
+        }
+    };
+    // quick and dirty key down
+    // key support is not planned
+    // only for quick debug
+    // game is gamepad only
+    Input.is_key_down = (function () {
+        var state = {};
+        window.addEventListener('keyup', function (e) { return state[e.key] = false; });
+        window.addEventListener('keydown', function (e) { return state[e.key] = true; });
+        return function (key) { return state.hasOwnProperty(key) && state[key] || false; };
+    })();
+    return Input;
+}());
 var LoreManager = /** @class */ (function () {
     function LoreManager() {
+        this.theme = "Alone is how the whisper ends...";
         /**
          * List of quotes to appear when hitting planning just before the game starts
          * to set the mood?
@@ -24,6 +76,12 @@ var LoreManager = /** @class */ (function () {
          * "whispers" are random? idk gotta think lore for them
          */
         this.quotes = [
+            [
+                "whispers:",
+                "\"voices of the dead...",
+                "mindless mutters...\"",
+                "nothing but sputters",
+            ],
             [
                 "whispers:",
                 "\"mors certa vita incerta\""
@@ -61,7 +119,7 @@ var LoreManager = /** @class */ (function () {
                 "and prohibiting them from entering into the presence of the Lord of spirits,",
                 "to prefer accusations against the inhabitants of the earth",
                 "It would have been better for them, had they never been born.\"",
-                "(Enoch 40:3)"
+                "(Enoch 40:3-7)"
             ],
             [
                 "\"Then Uriel,",
@@ -72,7 +130,7 @@ var LoreManager = /** @class */ (function () {
                 "unbecoming language against God,",
                 "and speak harsh things of His glory.",
                 "Here shall they be collected. Here shall be their territory.\"",
-                "(Enoch 24:2)"
+                "(Enoch 26:2)"
             ],
             [
                 "\"Among these there was a tree of an unceasing smell;",
@@ -155,7 +213,7 @@ var LoreManager = /** @class */ (function () {
             [
                 "\"Every tree that does not bear good fruit is cut down",
                 "and thrown into the fire.\"",
-                "(Matthew 7:1)"
+                "(Matthew 7:19)"
             ],
             [
                 "\"When the axe came into the Forest,",
@@ -250,8 +308,11 @@ var LoreManager = /** @class */ (function () {
                 "whispers:",
                 "\"a key...",
                 "a note...",
-                "the altar...",
-                "beyond the cave of despair...\""
+                "an altar to vanity..."
+            ],
+            [
+                "whispers:",
+                "\"within the cave of despair"
             ],
             [
                 "whispers:",
@@ -280,6 +341,11 @@ var LoreManager = /** @class */ (function () {
         return this.quotes[Math.floor(Math.random() * this.quotes.length)];
     };
     return LoreManager;
+}());
+var World = /** @class */ (function () {
+    function World() {
+    }
+    return World;
 }());
 var TimeManager = /** @class */ (function () {
     function TimeManager() {
@@ -326,60 +392,6 @@ var AssetManager = /** @class */ (function () {
         return img;
     };
     return AssetManager;
-}());
-var Input = /** @class */ (function () {
-    function Input() {
-        var _this = this;
-        this.usingGamepad = false;
-        this.activeGamepadIndex = -1;
-        this.gamepad = null;
-        this.dx = 0;
-        this.dy = 0;
-        window.addEventListener("gamepadconnected", function (event) {
-            _this.usingGamepad = true;
-            _this.activeGamepadIndex = event.gamepad.index;
-            _this.gamepad = navigator.getGamepads()[_this.activeGamepadIndex];
-        });
-        window.addEventListener("gamepaddisconnected", function (event) {
-            _this.usingGamepad = false;
-            _this.activeGamepadIndex = -1;
-            _this.gamepad = null;
-        });
-    }
-    Input.prototype.isGamepadConnected = function () {
-        return this.usingGamepad && navigator.getGamepads()[0] != null;
-    };
-    Input.prototype.getGamepad = function (gamepadIndex) {
-        if (gamepadIndex === void 0) { gamepadIndex = 0; }
-        return navigator.getGamepads()[gamepadIndex];
-    };
-    Input.prototype.update = function () {
-        var gamepad = this.getGamepad();
-        if (gamepad) {
-            var leftStickX = gamepad.axes[0];
-            var leftStickY = gamepad.axes[1];
-            var minDistance = 0.2;
-            this.dx = (Math.abs(leftStickX) > minDistance) ? leftStickX : 0;
-            this.dy = (Math.abs(leftStickY) > minDistance) ? leftStickY : 0;
-            if (gamepad) {
-                for (var i = 0; i < gamepad.buttons.length; i++) {
-                    // console.log(`Pressed ${gamepad.buttons[ButtonXBox.A].pressed}`);
-                }
-            }
-            console.log(this.dx + "|" + this.dy);
-        }
-    };
-    // quick and dirty key down
-    // key support is not planned
-    // only for quick debug
-    // game is gamepad only
-    Input.is_key_down = (function () {
-        var state = {};
-        window.addEventListener('keyup', function (e) { return state[e.key] = false; });
-        window.addEventListener('keydown', function (e) { return state[e.key] = true; });
-        return function (key) { return state.hasOwnProperty(key) && state[key] || false; };
-    })();
-    return Input;
 }());
 // Basic
 var Animator = /** @class */ (function () {
@@ -533,6 +545,10 @@ var Renderer = /** @class */ (function () {
         this.ctx.fillStyle = bgColor;
         this.ctx.fillRect(0, 0, this.width, this.height);
     };
+    Renderer.prototype.fillRect = function (color, x, y, width, height) {
+        this.ctx.fillStyle = color;
+        this.ctx.fillRect(Math.round(x), Math.round(y), Math.round(width), Math.round(height));
+    };
     Renderer.prototype.drawPixel = function (color, x, y) {
         this.ctx.fillStyle = color;
         this.ctx.fillRect(Math.round(x), Math.round(y), 1, 1);
@@ -554,9 +570,34 @@ var Particles = /** @class */ (function () {
     }
     return Particles;
 }());
+var MenuController = /** @class */ (function () {
+    function MenuController(title, choices) {
+        this.title = title;
+        this.choices = choices;
+    }
+    return MenuController;
+}());
+var Transition = /** @class */ (function () {
+    function Transition() {
+    }
+    return Transition;
+}());
+/// <reference path="input.ts" />
+/// <reference path="misc.ts" />
+/**
+ * Whisper End
+ *
+ * "/"
+ * @sefemuza
+ */
 var WhisperEnd = /** @class */ (function () {
     function WhisperEnd() {
         var _this = this;
+        this.colors = {
+            cinder: "#130e1a",
+            ziggurat: "#bacdde",
+            white: "#ffffff"
+        };
         this.state = 1 /* TitleScreen */;
         this.assets = {
             splashScreenBasic: AssetManager.loadImageAsset("assets/splash-art-basic.png"),
@@ -573,6 +614,10 @@ var WhisperEnd = /** @class */ (function () {
         this.animations = {
             ravenAnimation: new Animator(this.assets.aihtweAnimatedRaven, 12, 10, 32, 0.125)
         };
+        //in seconds
+        this.pause = 0.25;
+        this.transitionDuration = 0.5;
+        this.transitionTime = this.transitionDuration;
         this.loop = function () {
             _this.timeManager.update();
             _this.input.update();
@@ -588,6 +633,14 @@ var WhisperEnd = /** @class */ (function () {
                     break;
                 default:
             }
+            if (_this.pause > 0) {
+                _this.pause -= _this.timeManager.getDelta();
+            }
+            else if (_this.transitionTime > 0) {
+                _this.transitionTime -= _this.timeManager.getDelta();
+            }
+            _this.renderer.fillRect(_this.colors.cinder, 0, 0, 400, 240 * (_this.transitionTime / _this.transitionDuration));
+            _this.renderer.drawImg(_this.assets.icon, 400 - 6 - 4, 240 - 6 - 8);
             requestAnimationFrame(_this.loop);
         };
         this.snow = new Particles(100, {
@@ -605,14 +658,20 @@ var WhisperEnd = /** @class */ (function () {
         this.lore = new LoreManager();
         this.input = new Input();
         this.renderer = new Renderer("whisperend", 400, 240);
+        this.mainMenu = new MenuController("Whisper End", [
+            "Play",
+            "Settings",
+            "About",
+            "Quit"
+        ]);
         this.loop();
     }
     WhisperEnd.prototype.randomInt = function (min, max) {
         return Math.round(Math.random() * (max - min) + min);
     };
     WhisperEnd.prototype.drawSnow = function () {
-        var snowColor = "#ffffff";
-        var snowColorDark = "#bacdde";
+        var snowColor = this.colors.white;
+        var snowColorDark = this.colors.ziggurat;
         for (var i = 0; i < this.snow.count; i++) {
             var p = this.snow.particles[i];
             if (!p.alive) {
@@ -637,7 +696,7 @@ var WhisperEnd = /** @class */ (function () {
         }
     };
     WhisperEnd.prototype.drawAnimatedMainMenu = function () {
-        this.renderer.fillBackground("#130e1a");
+        this.renderer.fillBackground(this.colors.cinder);
         var delayer = 20;
         var distance = 1;
         var menuOffset = 30;
@@ -649,12 +708,6 @@ var WhisperEnd = /** @class */ (function () {
         this.renderer.drawImg(this.assets.aihtweCeilingSplit, menuOffset, 0);
         this.renderer.drawImg(this.assets.aihtweForegroundShadow, menuOffset + Math.sin(this.timeManager.getElapsed() / 1) * 2 - 2, 0);
         //draw menu
-        var menuOptions = [
-            "Play",
-            "Settings",
-            "About",
-            "Quit"
-        ];
         var titleX = 10;
         var titleY = 150;
         var menuXOffset = 6;
@@ -663,10 +716,9 @@ var WhisperEnd = /** @class */ (function () {
         var menuY = titleY + menuYOffset;
         var menuYgap = 8;
         var selectorPosition = 0;
-        this.renderer.drawImg(this.assets.icon, titleX, titleY - 16);
-        this.renderer.drawText("Whisper End", titleX, titleY);
-        for (var i = 0; i < menuOptions.length; i++) {
-            this.renderer.drawText(menuOptions[i], menuX, menuY + menuYgap * i);
+        this.renderer.drawText(this.mainMenu.title, titleX, titleY);
+        for (var i = 0; i < this.mainMenu.choices.length; i++) {
+            this.renderer.drawText(this.mainMenu.choices[i], menuX, menuY + menuYgap * i);
             if (selectorPosition == i) {
                 this.renderer.drawText(">", menuX - 5, menuY + menuYgap * i);
             }
